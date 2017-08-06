@@ -14,6 +14,7 @@ import ParsePromise from './ParsePromise';
 import Storage from './Storage';
 
 var iidCache = null;
+var usedWithNativeSDK = true;
 
 function hexOctet() {
   return Math.floor(
@@ -22,13 +23,23 @@ function hexOctet() {
 }
 
 function generateId() {
-  return (
-    hexOctet() + hexOctet() + '-' +
-    hexOctet() + '-' +
-    hexOctet() + '-' +
-    hexOctet() + '-' +
-    hexOctet() + hexOctet() + hexOctet()
-  );
+  if (usedWithNativeSDK){
+    return new Promise((resolve, reject) => {
+      ParsePushPlugin.getInstallationId(function (id) {
+        resolve(id);
+      }, function (e) {
+        reject(e);
+      })
+    }); 
+  }else{
+    return (
+      hexOctet() + hexOctet() + '-' +
+      hexOctet() + '-' +
+      hexOctet() + '-' +
+      hexOctet() + '-' +
+      hexOctet() + hexOctet() + hexOctet()
+    );
+  }
 }
 
 var InstallationController = {
@@ -38,12 +49,23 @@ var InstallationController = {
     }
     var path = Storage.generatePath('installationId');
     return Storage.getItemAsync(path).then((iid) => {
-      if (!iid) {
-        iid = generateId();
-        return Storage.setItemAsync(path, iid).then(() => {
-          iidCache = iid;
-          return iid;
-        });
+      if (usedWithNativeSDK){
+        if (!iid) {
+          return generateId().then(function (iid){
+            return _Storage2.default.setItemAsync(path, iid).then(function () {
+              iidCache = iid;
+              return iid;
+            });
+          })
+        }	
+      }else{
+        if (!iid) {
+          iid = generateId();
+          return Storage.setItemAsync(path, iid).then(() => {
+            iidCache = iid;
+            return iid;
+          });
+        }
       }
       iidCache = iid;
       return iid;
