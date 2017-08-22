@@ -70,7 +70,9 @@
       "/node_modules/",
       "/test_helpers/"
     ],
-    "transform": {".*": "./babel-jest.js"},
+    "transform": {
+      ".*": "./babel-jest.js"
+    },
     "setupTestFrameworkScriptFile": "./setup-jest.js"
   }
 }

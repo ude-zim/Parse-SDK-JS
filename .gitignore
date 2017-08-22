@@ -1,6 +1,6 @@
 coverage
 dist
-lib
+xlib
 logs
 node_modules
 test_output
